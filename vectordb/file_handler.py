@@ -89,6 +89,48 @@ class DocumentProcessor:
             raise
         
         except Exception as e:
-            logger.error(f"Error in process files: {e}")
+            logger.error(f"Error in save to cache: {e}")
             raise
-    
+        
+    def load_from_cache(self, cache_path):
+        
+        try:
+            if not cache_path:
+                cache_path = self.cache_dir
+                
+            with open(cache_path, "rb") as file:
+                data = pickle.load(file)
+                return data['chunks']
+            
+            logger.info("cache returned successful")
+                
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in load from cache: {e}")
+            raise
+        
+    def is_cache_valid (self, cache_path:Path) -> bool:
+        
+        try:
+            if cache_path.exists():
+                logger.info("Cache path doesn't exists")
+                return True
+                
+            else:
+                logger.info("Cache path does exists")
+                return False
+            
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in cache validation: {e}")
+            raise
