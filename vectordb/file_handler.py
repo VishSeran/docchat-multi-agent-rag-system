@@ -127,7 +127,6 @@ class DocumentProcessor:
                 return False
             
             
-            
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
@@ -140,3 +139,44 @@ class DocumentProcessor:
         
         hash_value = hashlib.sha256(data).hexdigest()
         return hash_value
+    
+    def document_process(self, files:list):
+        
+        try:
+            
+            if not files:
+                raise ValueError("files cannot be empty")
+            
+            self.valiate_files(files)
+            
+            all_chunks = []
+            read_hashes = set()
+            
+            for file in files:
+                
+                with open(file, "rb") as f:
+                    f_hash = self.get_hash(f.read())
+                    f_cache_path = self.cache_dir/f"{file.name}.pkl"
+                    
+                    if self.is_cache_valid(f_cache_path):
+                        logger.info(f"Loading from cache: {file.name}")
+                        chunks = self.load_from_cache(f_cache_path)
+                        
+                    else:
+                        logger.info(f"Processing and caching: {file.name}")
+                        chunks = self.process_files(file)
+                        self.save_to_cache(chunks, f_cache_path)
+                        
+                    
+                        
+                    
+                    
+                
+                
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in document process: {e}")
+            raise
