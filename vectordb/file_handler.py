@@ -142,8 +142,8 @@ class DocumentProcessor:
     
     def document_process(self, files:list):
         
+        
         try:
-            
             if not files:
                 raise ValueError("files cannot be empty")
             
@@ -151,32 +151,52 @@ class DocumentProcessor:
             
             all_chunks = []
             read_hashes = set()
-            
+                
             for file in files:
                 
-                with open(file, "rb") as f:
-                    f_hash = self.get_hash(f.read())
-                    f_cache_path = self.cache_dir/f"{file.name}.pkl"
-                    
-                    if self.is_cache_valid(f_cache_path):
-                        logger.info(f"Loading from cache: {file.name}")
-                        chunks = self.load_from_cache(f_cache_path)
-                        
-                    else:
-                        logger.info(f"Processing and caching: {file.name}")
-                        chunks = self.process_files(file)
-                        self.save_to_cache(chunks, f_cache_path)
-                        
-                    
-                        
-                    
-                    
+                try:
                 
+                    file_path = Path(file)
+                    
+                    with open(file, "rb") as f:
+                        f_hash = self.get_hash(f.read())
+                        f_cache_path = self.cache_dir/f"{f_hash}.pkl"
+                        
+                        if self.is_cache_valid(f_cache_path):
+                            logger.info(f"Loading from cache: {file_path.name}")
+                            chunks = self.load_from_cache(f_cache_path)
+                            
+                        else:
+                            logger.info(f"Processing and caching: {file_path.name}")
+                            chunks = self.process_files(file)
+                            self.save_to_cache(chunks, f_cache_path)
+                            
+                        for chunk in chunks:
+                            chunk_hash = self.get_hash(chunk.page_content.encode())
+                            
+                            if chunk_hash not in read_hashes:
+                                read_hashes.add(chunk_hash)
+                                all_chunks.append(chunk)
                 
+                except ValueError as e:
+                    logger.error(f"Value error: {e}")
+                    raise
+        
+                except Exception as e:
+                    logger.error(f"Failed to process {file_path.name}: {str(e)}")
+                    continue
+                    
+                            
+            logger.info(f"Total unique chunks: {len(all_chunks)}")
+            return all_chunks
+        
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
         
         except Exception as e:
-            logger.error(f"Error in document process: {e}")
+            logger.error(f"Failed to process {file_path.name}: {str(e)}")
             raise
+                        
+                       
+        
