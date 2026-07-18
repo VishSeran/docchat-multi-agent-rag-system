@@ -4,6 +4,8 @@ from configuration.config import CACHE_DIR, MAX_FILE_SIZE
 from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
 import os
+import pickle
+from datetime import datetime
 
 logger = get_logger("file-handler")
 
@@ -65,4 +67,28 @@ class DocumentProcessor:
             logger.error(f"Error in process files: {e}")
             raise
         
+    def save_to_cache(self,chunks:list, cache_path:Path):
+        
+        try:
+            if not chunks:
+                raise ValueError("Chunks are empty")
+            
+            if not cache_path:
+                cache_path = self.cache_dir
+                
+            with open(cache_path, "wb") as file:
+                pickle.dump({
+                    "timestamp": datetime.now().timestamp(),
+                    "chunks": chunks
+                }, file) 
+            
+            logger.info("Cache saved successful")
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in process files: {e}")
+            raise
     
