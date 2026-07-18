@@ -1,6 +1,7 @@
 from configuration.logger import get_logger
 from docling.document_converter import DocumentConverter
 from configuration.config import CACHE_DIR, MAX_FILE_SIZE
+from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
 import os
 
@@ -43,8 +44,19 @@ class DocumentProcessor:
         try:
             if not file:
                 raise ValueError("file cannot be empty or none")
+            
+            if not file.name.endswith((".pdf", ".docx", ".txt", ".md")):
+                raise ValueError(f"Unsupport file format: {file.name}")
+             
             document_converter = DocumentConverter()
             markdown_content = document_converter.convert(file).document.export_to_markdown()
+            spiltter = MarkdownHeaderTextSplitter(headers_to_split_on=self.headers)
+            chunks = spiltter.split_text(markdown_content)
+            
+            logger.info("file splitted successful")
+            
+            return chunks
+            
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
