@@ -4,6 +4,9 @@ from configuration.config import CACHE_DIR, MAX_FILE_SIZE
 from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
 import os
+import pickle
+import hashlib
+from datetime import datetime
 
 logger = get_logger("file-handler")
 
@@ -65,4 +68,135 @@ class DocumentProcessor:
             logger.error(f"Error in process files: {e}")
             raise
         
+    def save_to_cache(self,chunks:list, cache_path:Path):
+        
+        try:
+            if not chunks:
+                raise ValueError("Chunks are empty")
+            
+            if not cache_path:
+                cache_path = self.cache_dir
+                
+            with open(cache_path, "wb") as file:
+                pickle.dump({
+                    "timestamp": datetime.now().timestamp(),
+                    "chunks": chunks
+                }, file) 
+            
+            logger.info("Cache saved successful")
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in save to cache: {e}")
+            raise
+        
+    def load_from_cache(self, cache_path):
+        
+        try:
+            if not cache_path:
+                cache_path = self.cache_dir
+                
+            with open(cache_path, "rb") as file:
+                data = pickle.load(file)
+                return data['chunks']
+            
+            logger.info("cache returned successful")
+                
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in load from cache: {e}")
+            raise
+        
+    def is_cache_valid (self, cache_path:Path) -> bool:
+        
+        try:
+            if cache_path.exists():
+                logger.info("Cache path doesn't exists")
+                return True
+                
+            else:
+                logger.info("Cache path does exists")
+                return False
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in cache validation: {e}")
+            raise
+        
+    def get_hash(self, data:bytes) -> str:
+        
+        hash_value = hashlib.sha256(data).hexdigest()
+        return hash_value
     
+    def document_process(self, files:list):
+        
+        
+        try:
+            if not files:
+                raise ValueError("files cannot be empty")
+            
+            self.valiate_files(files)
+            
+            all_chunks = []
+            read_hashes = set()
+                
+            for file in files:
+                
+                try:
+                
+                    file_path = Path(file)
+                    
+                    with open(file, "rb") as f:
+                        f_hash = self.get_hash(f.read())
+                        f_cache_path = self.cache_dir/f"{f_hash}.pkl"
+                        
+                        if self.is_cache_valid(f_cache_path):
+                            logger.info(f"Loading from cache: {file_path.name}")
+                            chunks = self.load_from_cache(f_cache_path)
+                            
+                        else:
+                            logger.info(f"Processing and caching: {file_path.name}")
+                            chunks = self.process_files(file)
+                            self.save_to_cache(chunks, f_cache_path)
+                            
+                        for chunk in chunks:
+                            chunk_hash = self.get_hash(chunk.page_content.encode())
+                            
+                            if chunk_hash not in read_hashes:
+                                read_hashes.add(chunk_hash)
+                                all_chunks.append(chunk)
+                
+                except ValueError as e:
+                    logger.error(f"Value error: {e}")
+                    raise
+        
+                except Exception as e:
+                    logger.error(f"Failed to process {file_path.name}: {str(e)}")
+                    continue
+                    
+                            
+            logger.info(f"Total unique chunks: {len(all_chunks)}")
+            return all_chunks
+        
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Failed to process {file_path.name}: {str(e)}")
+            raise
+                        
+                       
+        
