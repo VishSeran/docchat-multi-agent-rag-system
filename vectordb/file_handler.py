@@ -5,6 +5,7 @@ from langchain_text_splitters.markdown import MarkdownHeaderTextSplitter
 from pathlib import Path
 import os
 import pickle
+import hashlib
 from datetime import datetime
 
 logger = get_logger("file-handler")
@@ -134,3 +135,8 @@ class DocumentProcessor:
         except Exception as e:
             logger.error(f"Error in cache validation: {e}")
             raise
+        
+    def get_hash(self, data:bytes) -> str:
+        
+        hash_value = hashlib.sha256(data).hexdigest()
+        return hash_value
