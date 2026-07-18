@@ -1,6 +1,6 @@
 from configuration.logger import get_logger
 from docling.document_converter import DocumentConverter
-from configuration.config import CACHE_DIR
+from configuration.config import CACHE_DIR, MAX_FILE_SIZE
 from pathlib import Path
 import os
 
@@ -13,7 +13,9 @@ class DocumentProcessor:
         self.cache_dir = Path(CACHE_DIR)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         
-    def valiate_file(self, files:list):
+        logger.info("Document processor initialized")
+        
+    def valiate_file(self, files:list) -> None:
         
         try:
             
@@ -22,7 +24,10 @@ class DocumentProcessor:
             
             file_size = sum(os.path.getsize(file.name) for file in files)
             
-            if file_size > 
+            if file_size > MAX_FILE_SIZE:
+                raise ValueError(f"Total file size cannot exceed {MAX_FILE_SIZE} MB")
+            
+            logger.info("Files validate successful")
             
         except ValueError as e:
             logger.error(f"Value error: {e}")
