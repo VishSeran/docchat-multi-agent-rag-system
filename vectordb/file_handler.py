@@ -15,7 +15,7 @@ class DocumentProcessor:
         
         logger.info("Document processor initialized")
         
-    def valiate_file(self, files:list) -> None:
+    def valiate_files(self, files:list) -> None:
         
         try:
             
@@ -34,7 +34,23 @@ class DocumentProcessor:
             raise
         
         except Exception as e:
-            logger.error(f"Error in document processor: {e}")
+            logger.error(f"Error in validate files: {e}")
+            raise
+    
+    
+    def process_files (self, file):
+        
+        try:
+            if not file:
+                raise ValueError("file cannot be empty or none")
+            document_converter = DocumentConverter()
+            markdown_content = document_converter.convert(file).document.export_to_markdown()
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in process files: {e}")
             raise
         
     
