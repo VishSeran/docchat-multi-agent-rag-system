@@ -1,7 +1,7 @@
 from langchain_groq import ChatGroq
 from configuration.logger import get_logger
 from dotenv import load_dotenv
-from configuration.config import EVALUATOR_MODEL, LLM_MODEL, relevance_checker_prompt
+from configuration.config import EVALUATOR_MODEL, LLM_MODEL, relevance_checker_prompt, verifier_prompt
 from langchain_core.prompts import PromptTemplate
 import os
 
@@ -35,13 +35,20 @@ class LLMModel:
                 api_key=GROQ_API
             )
             
-            prompt_template = PromptTemplate(
+            relevence_prompt_template = PromptTemplate(
                 template=relevance_checker_prompt,
                 input_variables=["question","document_content"],
                 
             )
             
-            self.relevance_chain = prompt_template | self.llm_grader
+            self.relevance_chain = relevence_prompt_template | self.llm_grader
+            
+            verifier_prompt_template = PromptTemplate(
+                template= verifier_prompt,
+                input_variables=["answer", "context"]
+            )
+            
+            self.verifier_chain = verifier_prompt_template | self.llm_grader 
             
         
         except ValueError as e:
@@ -53,7 +60,7 @@ class LLMModel:
             raise
         
         
-    def get_evaluate_response(self,relevence_chain, question, document_content):
+    def evaluate_relevance(self,relevence_chain, question, document_content):
         
         """
         1. Retrieve the top-k document chunks from the global retriever.
