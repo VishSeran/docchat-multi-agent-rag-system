@@ -10,7 +10,7 @@ logger = get_logger("model")
 
 class LLMModel:
     
-    def __int__(self, evaluator_model = EVALUATOR_MODEL, llm_model_id = LLM_MODEL):
+    def __init__(self, evaluator_model = EVALUATOR_MODEL, llm_model_id = LLM_MODEL):
         
         try:
             
@@ -35,6 +35,14 @@ class LLMModel:
                 api_key=GROQ_API
             )
             
+            prompt_template = PromptTemplate(
+                template=relevance_checker_prompt,
+                input_variables=["question","document_content"],
+                
+            )
+            
+            self.relevance_chain = prompt_template | self.llm_grader
+            
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -44,8 +52,8 @@ class LLMModel:
             logger.error(f"Error in llm model initialization : {e}")
             raise
         
-    
-    def get_evaluator_chain (self):
+        
+    def get_evaluate_response(self,relevence_chain, question, document_content):
         
         """
         1. Retrieve the top-k document chunks from the global retriever.
@@ -56,16 +64,13 @@ class LLMModel:
         """
         
         try:
+            response = self.relevence_chain.invoke({
+                "question": question,
+                "document_content": document_content
+            })
             
-            prompt_template = PromptTemplate(
-                template=relevance_checker_prompt,
-                input_variables=["question","document_content"],
-                
-            )
+            return response.content.strip()
             
-            relevance_chain = prompt_template | self.llm_grader
-            
-            return relevance_chain
             
             
         except ValueError as e:
@@ -73,5 +78,5 @@ class LLMModel:
             raise
         
         except Exception as e:
-            logger.error(f"Error in get evaluator chain initialization : {e}")
+            logger.error(f"Error in get evaluate response initialization : {e}")
             raise
