@@ -1,11 +1,9 @@
 
-from langchain_huggingface import HuggingFaceEmbeddings
 from configuration.logger import get_logger
 from configuration.config import COLLECTION_NAME, CHROMA_DB_PATH,HYBRID_RETRIEVER_WEIGHTS
 from langchain_chroma import Chroma
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers import EnsembleRetriever
-
 
 
 logger = get_logger("vector-build")
@@ -37,7 +35,7 @@ class VectorBuild:
                 search_type = "similarity_score_threshold",
                 search_kwargs = {
                     "score_threshold": 0.6,
-                    "k": 5
+                    "k": 8
                 }
             )
             
