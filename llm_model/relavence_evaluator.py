@@ -1,16 +1,16 @@
-from langchain_groq import ChatGroq
-from configuration.logger import get_logger
+
 from dotenv import load_dotenv
-from configuration.config import EVALUATOR_MODEL, LLM_MODEL, relevance_checker_prompt, verifier_prompt
-from langchain_core.prompts import ChatPromptTemplate
 import os
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_groq import ChatGroq
+from configuration.config import RELAVENCE_EVALUATOR_MODEL,relevance_checker_prompt
+from configuration.logger import get_logger
 
+logger = get_logger("relavence-evaluator")
 
-logger = get_logger("model")
-
-class LLMModel:
+class RelavenceEvaluator:
     
-    def __init__(self, evaluator_model = EVALUATOR_MODEL, llm_model_id = LLM_MODEL):
+    def __init__(self, relavence_model=RELAVENCE_EVALUATOR_MODEL):
         
         try:
             
@@ -22,16 +22,9 @@ class LLMModel:
             
             
             self.llm_grader =  ChatGroq(
-                model=evaluator_model,
+                model=relavence_model,
                 temperature=0,
                 max_tokens=10,
-                api_key=GROQ_API
-            )
-            
-            self.llm_generator = ChatGroq(
-                model=llm_model_id,
-                temperature=0.5,
-                max_tokens=200,
                 api_key=GROQ_API
             )
             
@@ -58,28 +51,6 @@ class LLMModel:
             
             self.relevance_chain = relevence_prompt_template | self.llm_grader
             
-            verifier_prompt_template = ChatPromptTemplate.from_messages(
-                [
-                    (
-                        "system",
-                        verifier_prompt
-                    ),
-                    (
-                        "human",
-                        """ 
-                        answer:
-                        {answer}
-                        
-                        context:
-                        {context}
-                        """
-                    )
-                ]
-            )
-            
-            self.verifier_chain = verifier_prompt_template | self.llm_grader 
-            
-        
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
@@ -88,7 +59,7 @@ class LLMModel:
             logger.error(f"Error in llm model initialization : {e}")
             raise
         
-        
+    
     def evaluate_relevance(self, question, document_content):
         
         """
@@ -116,23 +87,3 @@ class LLMModel:
         except Exception as e:
             logger.error(f"Error in get evaluate relavence: {e}")
             raise
-        
-    
-    def evaluate_verification (self, answer, context):
-        
-        try:
-            
-            response = self.verifier_chain.invoke({
-                "answer": answer,
-                "context": context
-            })
-            
-            
-            
-        except ValueError as e:
-            logger.error(f"Value error: {e}")
-            raise
-        
-        except Exception as e:
-            logger.error(f"Error in get evaluate verification: {e}")
-            raise    

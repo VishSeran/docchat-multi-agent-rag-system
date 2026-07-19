@@ -5,7 +5,8 @@ COLLECTION_NAME = "docchat_collection"
 CHROMA_DB_PATH = "../vectordb/vectore_store"
 HYBRID_RETRIEVER_WEIGHTS = [0.5, 0.5]
 
-EVALUATOR_MODEL = "llama-3.1-8b-instant"
+RELAVENCE_EVALUATOR_MODEL = "llama-3.1-8b-instant"
+VERIFIER_EVALUATOR_MODEL = "llama-3.1-8b-instant"
 LLM_MODEL = "llama-3.1-8b-instant"
 
 
@@ -26,7 +27,7 @@ relevance_checker_prompt = """
         Important: If the passages mention or reference the topic or timeframe of the question in any way, even if incomplete, respond with "PARTIAL" instead of "NO_MATCH".        
         
         Question: {question}
-        Passages: {document_content}        
+        Passages: {question}        
         
         Respond ONLY with one of the following labels: CAN_ANSWER, PARTIAL, NO_MATCH
        
