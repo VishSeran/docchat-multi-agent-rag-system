@@ -26,7 +26,7 @@ relevance_checker_prompt = """
         Important: If the passages mention or reference the topic or timeframe of the question in any way, even if incomplete, respond with "PARTIAL" instead of "NO_MATCH".        
         
         Question: {question}
-        Passages: {document_content}        
+        Passages: {question}        
         
         Respond ONLY with one of the following labels: CAN_ANSWER, PARTIAL, NO_MATCH
        

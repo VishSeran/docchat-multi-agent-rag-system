@@ -2,7 +2,7 @@ from langchain_groq import ChatGroq
 from configuration.logger import get_logger
 from dotenv import load_dotenv
 from configuration.config import EVALUATOR_MODEL, LLM_MODEL, relevance_checker_prompt, verifier_prompt
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 import os
 
 
@@ -35,17 +35,46 @@ class LLMModel:
                 api_key=GROQ_API
             )
             
-            relevence_prompt_template = PromptTemplate(
-                template=relevance_checker_prompt,
-                input_variables=["question","document_content"],
-                
+            relevence_prompt_template = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        relevance_checker_prompt
+                    ),
+                    
+                    (
+                        "human",
+                        """
+                        question: 
+                        {question}
+                        
+                        document_content:
+                        {document_content}
+                         
+                        """
+                    )
+                ]
             )
             
             self.relevance_chain = relevence_prompt_template | self.llm_grader
             
-            verifier_prompt_template = PromptTemplate(
-                template= verifier_prompt,
-                input_variables=["answer", "context"]
+            verifier_prompt_template = ChatPromptTemplate.from_messages(
+                [
+                    (
+                        "system",
+                        verifier_prompt
+                    ),
+                    (
+                        "human",
+                        """ 
+                        answer:
+                        {answer}
+                        
+                        context:
+                        {context}
+                        """
+                    )
+                ]
             )
             
             self.verifier_chain = verifier_prompt_template | self.llm_grader 
@@ -60,7 +89,7 @@ class LLMModel:
             raise
         
         
-    def evaluate_relevance(self,relevence_chain, question, document_content):
+    def evaluate_relevance(self, question, document_content):
         
         """
         1. Retrieve the top-k document chunks from the global retriever.
@@ -71,7 +100,7 @@ class LLMModel:
         """
         
         try:
-            response = self.relevence_chain.invoke({
+            response = self.relevance_chain.invoke({
                 "question": question,
                 "document_content": document_content
             })
@@ -87,3 +116,6 @@ class LLMModel:
         except Exception as e:
             logger.error(f"Error in get evaluate response initialization : {e}")
             raise
+        
+    
+    def 
