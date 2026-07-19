@@ -10,19 +10,34 @@ class EmbeddingModel:
     
     def __init__(self, embedding_model_id = EMBED_MODEL):
         
+        try:
+            
+            if not embedding_model_id:
+                raise ValueError("embedding model cannot be empty") 
+            
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            logger.info(f"Device is initialted: {device}")
+            
+            self.embed_model = HuggingFaceEmbeddings(
+                model_name = embedding_model_id,
+                model_kwargs = {
+                    "device": device
+                },
+                encode_kwargs = {
+                    "normalize_embeddings": True
+                }
+            )
+            logger.info("Embedding model is initiated")
         
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        logger.info(f"Device is initialted: {device}")
+        except ValueError as e:
+            logger.error(f"Value error: {e}")   
+            raise
         
-        self.embed_model = HuggingFaceEmbeddings(
-            model_name = embedding_model_id,
-            model_kwargs = {
-                "device": device
-            },
-            encode_kwargs = {
-                "normalize_embeddings": True
-            }
-        )
-        logger.info("Embedding model is initiated")
+        except Exception as e:
+            logger.error(f"Error in embeeding model: {e}")
+            raise 
+    
+    def get_model(self):
+        return self.embed_model
         
     
