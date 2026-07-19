@@ -58,3 +58,32 @@ class RelavenceEvaluator:
         except Exception as e:
             logger.error(f"Error in llm model initialization : {e}")
             raise
+        
+    
+    def evaluate_relevance(self, question, document_content):
+        
+        """
+        1. Retrieve the top-k document chunks from the global retriever.
+        2. Combine them into a single text string.
+        3. Pass that text + question to the LLM for classification.        
+        
+        Returns: "CAN_ANSWER", "PARTIAL", or "NO_MATCH".
+        """
+        
+        try:
+            response = self.relevance_chain.invoke({
+                "question": question,
+                "document_content": document_content
+            })
+            
+            return response.content.strip()
+            
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in get evaluate relavence: {e}")
+            raise
