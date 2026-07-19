@@ -5,7 +5,8 @@ COLLECTION_NAME = "docchat_collection"
 CHROMA_DB_PATH = "../vectordb/vectore_store"
 HYBRID_RETRIEVER_WEIGHTS = [0.5, 0.5]
 
-EVALUATOR_MODEL = "llama-3.1-8b-instant"
+RELAVENCE_EVALUATOR_MODEL = "llama-3.1-8b-instant"
+VERIFIER_EVALUATOR_MODEL = "llama-3.1-8b-instant"
 LLM_MODEL = "llama-3.1-8b-instant"
 
 

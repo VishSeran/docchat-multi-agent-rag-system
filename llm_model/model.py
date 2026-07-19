@@ -114,8 +114,25 @@ class LLMModel:
             raise
         
         except Exception as e:
-            logger.error(f"Error in get evaluate response initialization : {e}")
+            logger.error(f"Error in get evaluate relavence: {e}")
             raise
         
     
-    def 
+    def evaluate_verification (self, answer, context):
+        
+        try:
+            
+            response = self.verifier_chain.invoke({
+                "answer": answer,
+                "context": context
+            })
+            
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in get evaluate verification: {e}")
+            raise    
