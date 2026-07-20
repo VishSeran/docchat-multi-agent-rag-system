@@ -28,6 +28,8 @@ class RelavenceEvaluator:
                 api_key=GROQ_API
             )
             
+            logger.info("LLM relavence evaluator is created")
+            
             relevence_prompt_template = ChatPromptTemplate.from_messages(
                 [
                     (
@@ -49,7 +51,11 @@ class RelavenceEvaluator:
                 ]
             )
             
+            logger.info("LLM relavence evaluator prompt is created")
+            
             self.relevance_chain = relevence_prompt_template | self.llm_grader
+            
+            logger.info("LLM relavence evaluator chain is created")
             
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -75,6 +81,8 @@ class RelavenceEvaluator:
                 "question": question,
                 "document_content": document_content
             })
+            
+            logger.info("Relavence response is fetched")
             
             return response.content.strip()
             
