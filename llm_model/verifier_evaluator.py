@@ -86,3 +86,27 @@ class VerifierEvaluator:
             logger.error(f"Error in verifier response: {e}")
             raise   
         
+        
+    def extracted_info_from_response(self, response):
+        
+        try:
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in extracted info from response: {e}")
+            raise
+    
+    def fomrate_response(self, response):
+        
+        try:
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in format verifier response: {e}")
+            raise
