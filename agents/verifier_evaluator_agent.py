@@ -9,7 +9,7 @@ import ast
 
 logger = get_logger("verifier-evalutor")
 
-class VerifierEvaluator:
+class VerifierEvaluatorAgent:
     
     def __init__(self, verifier_model=VERIFIER_EVALUATOR_MODEL):
         
@@ -31,6 +31,7 @@ class VerifierEvaluator:
             
             logger.info("LLM verifier is created")
             
+            
             verifier_prompt_template = ChatPromptTemplate.from_messages([
                 (
                     "system",
@@ -40,16 +41,15 @@ class VerifierEvaluator:
                 (
                     "human",
                     """
-                    answer: 
+                    Answer: 
                     {answer}
                     
-                    context:
-                    {context}
-                            
+                    Context:
+                    {context}   
                     """
                 )
-                
             ])
+            
             
             logger.info("LLM verifier prompt is created")
             self.verifier_chain = verifier_prompt_template | self.llm_verifier
