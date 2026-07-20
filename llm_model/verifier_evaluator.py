@@ -137,7 +137,7 @@ class VerifierEvaluator:
             logger.error(f"Error in extracted info from response: {e}")
             raise
     
-    def fomrate_response(self, response):
+    def fomrate_response(self, verification:dict):
         
         try:
             
