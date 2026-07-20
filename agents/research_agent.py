@@ -2,7 +2,8 @@ from langchain_groq import ChatGroq
 from configuration.logger import get_logger
 from dotenv import load_dotenv
 from configuration.config import LLM_MODEL, research_prompt
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.documents import Document
 import os
 
 
@@ -52,33 +53,45 @@ class ResearchAgent:
             
             self.research_chain = research_prompt_template | self.llm_generator
             
-            
-            
-        
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
         
         except Exception as e:
-            logger.error(f"Error in llm model initialization : {e}")
+            logger.error(f"Error in research agent initialization : {e}")
             raise
         
     
-    def evaluate_verification (self, answer, context):
+    def get_research_response (self, question, documents:list[Document]):
+        
+        final_response = None
         
         try:
             
-            response = self.verifier_chain.invoke({
-                "answer": answer,
+            logger.info(f"ResearchAgent.generate called with question='{question}' and {len(documents)} documents.")     
+            context = "\n\n".join([doc.page_content for doc in documents])
+            logger.info(f"Combined context length: {len(context)} characters.") 
+            
+            response = self.research_chain.invoke({
+                "question": question,
                 "context": context
             })
             
+            logger.info("LLM response is fetched")
             
+            if not response.content:
+                final_response = "I cannot answer this question based on the provided documents."
+            
+            else:
+                final_response = response.content.strip()
+            
+            logger.info(f"Generated answer: {final_response}")
+            return final_response 
             
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
         
         except Exception as e:
-            logger.error(f"Error in get evaluate verification: {e}")
-            raise    
+            logger.error(f"Error in get research response: {e}")
+            raise RuntimeError("Failed to generate answer due to a model error.") from e
