@@ -32,6 +32,24 @@ class VerifierEvaluatorAgent:
             logger.info("LLM verifier is created")
             
             
+            verifier_prompt_template = ChatPromptTemplate.from_messages([
+                (
+                    "system",
+                    verifier_prompt
+                ),
+                
+                (
+                    "human",
+                    """
+                    Answer: 
+                    {answer}
+                    
+                    Context:
+                    {context}   
+                    """
+                )
+            ])
+            
             
             logger.info("LLM verifier prompt is created")
             self.verifier_chain = verifier_prompt_template | self.llm_verifier
