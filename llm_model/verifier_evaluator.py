@@ -23,7 +23,7 @@ class VerifierEvaluator:
             api_key=groq_api
         )
         
-        verifier_prompt = ChatPromptTemplate.from_messages([
+        verifier_prompt_template = ChatPromptTemplate.from_messages([
             (
                 "system",
                 verifier_prompt
@@ -42,3 +42,5 @@ class VerifierEvaluator:
             )
             
         ])
+        
+        self.verifier_chain = verifier_prompt_template | self.llm_verifier
