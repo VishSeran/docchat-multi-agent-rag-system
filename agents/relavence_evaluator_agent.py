@@ -8,7 +8,7 @@ from configuration.logger import get_logger
 
 logger = get_logger("relavence-evaluator")
 
-class RelavenceEvaluator:
+class RelavenceEvaluatorAgent:
     
     def __init__(self, relavence_model=RELAVENCE_EVALUATOR_MODEL):
         

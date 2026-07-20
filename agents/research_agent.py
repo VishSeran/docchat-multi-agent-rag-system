@@ -1,16 +1,16 @@
 from langchain_groq import ChatGroq
 from configuration.logger import get_logger
 from dotenv import load_dotenv
-from configuration.config import EVALUATOR_MODEL, LLM_MODEL, relevance_checker_prompt, verifier_prompt
-from langchain_core.prompts import ChatPromptTemplate
+from configuration.config import LLM_MODEL, research_prompt
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 import os
 
 
 logger = get_logger("model")
 
-class LLMModel:
+class ResearchAgent:
     
-    def __init__(self, evaluator_model = EVALUATOR_MODEL, llm_model_id = LLM_MODEL):
+    def __init__(self, llm_model_id = LLM_MODEL):
         
         try:
             
@@ -24,32 +24,35 @@ class LLMModel:
             self.llm_generator = ChatGroq(
                 model=llm_model_id,
                 temperature=0.5,
-                max_tokens=200,
+                max_tokens=500,
                 api_key=GROQ_API
             )
             
+            logger.info("LLM model loaded")
+            
+            research_prompt_template = ChatPromptTemplate.from_messages([
+                (
+                    "system",
+                    research_prompt
+                ),
+                
+                (
+                    "human",
+                    """
+                    Question: 
+                    {question}
+                    
+                    Context:
+                    {context}   
+                    """
+                )
+            ])
+            
+            logger.info("LLM reseach agent Created")
+            
+            self.research_chain = research_prompt_template | self.llm_generator
             
             
-            verifier_prompt_template = ChatPromptTemplate.from_messages(
-                [
-                    (
-                        "system",
-                        verifier_prompt
-                    ),
-                    (
-                        "human",
-                        """ 
-                        answer:
-                        {answer}
-                        
-                        context:
-                        {context}
-                        """
-                    )
-                ]
-            )
-            
-            self.verifier_chain = verifier_prompt_template | self.llm_grader 
             
         
         except ValueError as e:

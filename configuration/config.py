@@ -67,3 +67,20 @@ verifier_prompt = """
         
         
 """
+
+research_prompt = """
+        You are an AI assistant designed to provide precise and factual answers based on the given context.        
+        
+        Instructions:
+        - Answer the following question using only the provided context.
+        - Be clear, concise, and factual.
+        - Return as much information as you can get from the context.        
+        
+        Question: 
+        {question}
+        
+        Context:
+        {context}        
+        
+        Provide your answer below:
+        """
