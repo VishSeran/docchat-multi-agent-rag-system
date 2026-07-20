@@ -23,6 +23,8 @@ class VerifierEvaluator:
             api_key=groq_api
         )
         
+        logger.info("LLM verifier is created")
+        
         verifier_prompt_template = ChatPromptTemplate.from_messages([
             (
                 "system",
@@ -43,4 +45,6 @@ class VerifierEvaluator:
             
         ])
         
+        logger.info("LLM verifier prompt is created")
         self.verifier_chain = verifier_prompt_template | self.llm_verifier
+        logger.info("LLM verifier chain is created successful")
