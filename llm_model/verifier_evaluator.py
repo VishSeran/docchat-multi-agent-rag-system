@@ -4,6 +4,7 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 import dotenv
 import os
+import ast
 
 
 logger = get_logger("verifier-evalutor")
@@ -24,7 +25,7 @@ class VerifierEvaluator:
             self.llm_verifier = ChatGroq(
                 model=verifier_model,
                 temperature=0,
-                max_tokens=10,
+                max_tokens=300,
                 api_key=groq_api
             )
             
@@ -77,6 +78,11 @@ class VerifierEvaluator:
                 "answer": answer,
                 "context": context
             })
+            
+            parse_response = self.extracted_info_from_response(response.content)
+            final_response = self.format_response(parse_response)
+            
+            return final_response
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -102,22 +108,28 @@ class VerifierEvaluator:
             for line in lines:
                 if ":" in line:
                     key, value = line.split(":", 1)
-                    key = key.strip().capitalize()
+                    key = key.strip().lower()
                     value = value.strip()
                     
-                    if key in {"Supported", "Unsupported claims", "Contradictions", "Relevant", "Additional details"}:
+                    if key in {"supported", "unsupported claims", "contradictions", "relevant", "additional details"}:
                         
-                        if key in {"Unsupported claims", "Contradictions"}:
-                            if value.startswith("[") and value.endswith("]"):
-                                items = value[1:-1].split(",")
-                                items = [item.strip('"').strip("'") for item in items if item.strip()]
+                        if key in {"unsupported claims", "contradictions"}:
+                            try:
+                                items = ast.literal_eval(value)
                                 
-                                verifications[key] = items
-                                
-                            else:
+                                if isinstance(items, list):
+                                    verifications[key] = [
+                                        str(item).strip() for item in items
+                                    ]
+                            
+                                else:
+                                    verifications[key] = []
+                                    
+                            except (ValueError, SyntaxError):
                                 verifications[key] = []
                                 
-                        elif key == "Additional details":
+                                
+                        elif key == "additional details":
                             verifications[key] = value
                             
                         else:
@@ -127,8 +139,6 @@ class VerifierEvaluator:
                             
             return verifications
             
-            
-            
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
@@ -137,35 +147,36 @@ class VerifierEvaluator:
             logger.error(f"Error in extracted info from response: {e}")
             raise
     
-    def fomrate_response(self, verification:dict):
+    def format_response(self, verification:dict):
         
         try:
             
-            supported = verification.get("Supported", "NO")
-            unspported_claims = verification.get("Unsupported claims", [])
-            contradictions = verification.get("Contradictions", [])
-            relevant = verification.get("Relevant", "NO")
-            additional_details = verification.get("Additional details", "")
-            
+            supported = verification.get("supported", "NO")
+            unsupported_claims = verification.get("unsupported claims", [])
+            contradictions = verification.get("contradictions", [])
+            relevant = verification.get("relevant", "NO")
+            additional_details = verification.get("additional details", "")
+
             result = f"**Supported**: {supported}\n"
-            
-            if unspported_claims:
-                result += f"**Unsupported Claims**: {", ".join(unspported_claims)}\n"
-            
+
+            if unsupported_claims:
+                claims = ", ".join(unsupported_claims)
+                result += f"**Unsupported Claims**: {claims}\n"
             else:
-                result += "**Unsupported Claims:** None\n"
+                result += "**Unsupported Claims**: None\n"
 
             if contradictions:
-                result += f"**Contradictions:** {', '.join(contradictions)}\n"
+                contradictions_text = ", ".join(contradictions)
+                result += f"**Contradictions**: {contradictions_text}\n"
             else:
-                result += "**Contradictions:** None\n"
+                result += "**Contradictions**: None\n"
 
-            result += f"**Relevant:** {relevant}\n"
+            result += f"**Relevant**: {relevant}\n"
 
             if additional_details:
-                result += f"**Additional Details:** {additional_details}\n"
+                result += f"**Additional Details**: {additional_details}\n"
             else:
-                result += "**Additional Details:** None\n"
+                result += "**Additional Details**: None\n"
                 
             logger.info("Result is fetched")
                 
