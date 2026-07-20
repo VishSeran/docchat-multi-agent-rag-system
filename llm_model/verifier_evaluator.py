@@ -87,9 +87,47 @@ class VerifierEvaluator:
             raise   
         
         
-    def extracted_info_from_response(self, response):
+    def extracted_info_from_response(self, response:str):
         
         try:
+            
+            if not response:
+                raise ValueError("Response is required to process")
+            
+            verifications = {}
+            lines = response.split("\n")
+            
+            logger.info("response is splitted by lines")
+            
+            for line in lines:
+                if ":" in line:
+                    key, value = line.split(":", 1)
+                    key = key.strip().capitalize()
+                    value = value.strip()
+                    
+                    if key in {"Supported", "Unsupported claims", "Contradictions", "Relevant", "Additional details"}:
+                        
+                        if key in {"Unsupported claims", "Contradictions"}:
+                            if value.startswith("[") and value.endswith("]"):
+                                items = value[1:-1].split(",")
+                                items = [item.strip('"').strip("'") for item in items if item.strip()]
+                                
+                                verifications[key] = items
+                                
+                            else:
+                                verifications[key] = []
+                                
+                        elif key == "Additional details":
+                            verifications[key] = value
+                            
+                        else:
+                            verifications[key] = value.upper()
+            
+            logger.info("Verifications are fetched")
+                            
+            return verifications
+            
+            
             
         except ValueError as e:
             logger.error(f"Value error: {e}")
