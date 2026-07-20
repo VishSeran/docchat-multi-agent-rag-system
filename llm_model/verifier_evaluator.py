@@ -141,6 +141,36 @@ class VerifierEvaluator:
         
         try:
             
+            supported = verification.get("Supported", "NO")
+            unspported_claims = verification.get("Unsupported claims", [])
+            contradictions = verification.get("Contradictions", [])
+            relevant = verification.get("Relevant", "NO")
+            additional_details = verification.get("Additional details", "")
+            
+            result = f"**Supported**: {supported}\n"
+            
+            if unspported_claims:
+                result += f"**Unsupported Claims**: {", ".join(unspported_claims)}\n"
+            
+            else:
+                result += "**Unsupported Claims:** None\n"
+
+            if contradictions:
+                result += f"**Contradictions:** {', '.join(contradictions)}\n"
+            else:
+                result += "**Contradictions:** None\n"
+
+            result += f"**Relevant:** {relevant}\n"
+
+            if additional_details:
+                result += f"**Additional Details:** {additional_details}\n"
+            else:
+                result += "**Additional Details:** None\n"
+                
+            logger.info("Result is fetched")
+                
+            return result
+            
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
