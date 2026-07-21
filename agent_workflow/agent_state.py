@@ -13,6 +13,7 @@ class AgentState(TypedDict):
     messages: Annotated[list[HumanMessage | AIMessage],add_messages]
     question: str
     retriever: EnsembleRetriever
+    documents: list[Document]
 
     relevance_result: str
     is_relevant: bool

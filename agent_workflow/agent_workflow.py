@@ -34,7 +34,7 @@ class AgentWorkflow:
         
             workflow = StateGraph(AgentState)
             workflow.add_node("check_relavence",self._check_relevance)
-            workflow.add_node("research",self.research_process)
+            workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",)
         
         
@@ -52,7 +52,7 @@ class AgentWorkflow:
             
             retriever = state['retriever']
             
-            relevance_response = self.relevance_agent.evaluate_relevance(
+            relevance_response, top_docs = self.relevance_agent.evaluate_relevance(
                 state['question'],
                 retriever,
                 k=20
@@ -62,6 +62,7 @@ class AgentWorkflow:
             if relevance_response == "CAN_ANSWER" or relevance_response == "PARTIAL":
                 return{
                     "messages": [AIMessage(content=relevance_response)],
+                    "documents":[top_docs],
                     "relevance_result":relevance_response,
                     "is_relevant": True
                 }
@@ -69,6 +70,7 @@ class AgentWorkflow:
             else:
                 return {
                     "messages": [AIMessage(content=relevance_response)],
+                    "documents":[top_docs],
                     "is_relevant": False
                 }
                 
@@ -81,14 +83,14 @@ class AgentWorkflow:
             raise
         
         
-    def research_process(self, state:AgentState):
+    def _research_process(self, state:AgentState):
         
         try:
             
-            retriever = state['retriever']
             research_response = self.research_agent.get_research_response(
                 question=state["question"],
-                retriver=retriever
+                documents=state['documents']
+                
             )
             
             logger.info("research response fetched from agent workflow")
@@ -104,6 +106,21 @@ class AgentWorkflow:
         
         except Exception as e:
             logger.error(f"Error in research process: {e}")
+            raise
+        
+    
+    def _verifier_process(self, state: AgentState):
+        
+        try:
+            
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in verifier process: {e}")
             raise
            
         

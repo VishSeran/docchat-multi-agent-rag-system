@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 from configuration.config import LLM_MODEL, research_prompt
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
-from langchain_classic.retrievers import EnsembleRetriever
 import os
 
 
@@ -63,13 +62,11 @@ class ResearchAgent:
             raise
         
     
-    def get_research_response (self, question, retriver:EnsembleRetriever):
+    def get_research_response (self, question, documents:Document):
         
         final_response = None
         
         try:
-            
-            documents = retriver.invoke(question)
             logger.info(f"ResearchAgent.generate called with question='{question}' and {len(documents)} documents.")     
             context = "\n\n".join([doc.page_content for doc in documents])
             logger.info(f"Combined context length: {len(context)} characters.") 

@@ -88,8 +88,7 @@ class RelevanceEvaluatorAgent:
             
             logger.info("Relavence response is fetched")
             
-            return response.content.strip()
-            
+            return response.content.strip(), top_docs
             
             
         except ValueError as e:
