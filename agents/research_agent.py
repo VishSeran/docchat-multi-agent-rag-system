@@ -62,12 +62,11 @@ class ResearchAgent:
             raise
         
     
-    def get_research_response (self, question, documents:list[Document]):
+    def get_research_response (self, question, documents:Document):
         
         final_response = None
         
         try:
-            
             logger.info(f"ResearchAgent.generate called with question='{question}' and {len(documents)} documents.")     
             context = "\n\n".join([doc.page_content for doc in documents])
             logger.info(f"Combined context length: {len(context)} characters.") 

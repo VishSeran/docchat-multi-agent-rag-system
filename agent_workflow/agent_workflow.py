@@ -4,6 +4,7 @@ from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
 from agent_state import AgentState
 from langgraph.graph import StateGraph
 from configuration.logger import get_logger
+from langchain_core.messages import AIMessage, HumanMessage
 
 
 logger = get_logger("agent-workflow")
@@ -32,9 +33,9 @@ class AgentWorkflow:
         try:
         
             workflow = StateGraph(AgentState)
-            workflow.add_node("check_relavence",self._check_relavence)
-            workflow.add_node("research",)
-            workflow.add_node("verifier",)
+            workflow.add_node("check_relavence",self._check_relevance)
+            workflow.add_node("research",self._research_process)
+            workflow.add_node("verifier",self._verifier_process)
         
         
         except ValueError as e:
@@ -45,25 +46,31 @@ class AgentWorkflow:
             logger.error(f"Error in build workflow: {e}")
             raise    
     
-    def _check_relavence(self,state:AgentState):
+    def _check_relevance(self,state:AgentState):
         
         try:
             
             retriever = state['retriever']
             
-            relevance_response = self.relevance_agent.evaluate_relevance(
+            relevance_response, top_docs = self.relevance_agent.evaluate_relevance(
                 state['question'],
                 retriever,
                 k=20
             )
             
+            logger.info("relevance response is fetched by _checker relevance")
             if relevance_response == "CAN_ANSWER" or relevance_response == "PARTIAL":
                 return{
+                    "messages": [AIMessage(content=relevance_response)],
+                    "documents":[top_docs],
+                    "relevance_result":relevance_response,
                     "is_relevant": True
                 }
                 
             else:
                 return {
+                    "messages": [AIMessage(content=relevance_response)],
+                    "documents":[top_docs],
                     "is_relevant": False
                 }
                 
@@ -76,7 +83,66 @@ class AgentWorkflow:
             raise
         
         
+    def _research_process(self, state:AgentState):
         
+        try:
+            
+            research_response = self.research_agent.get_research_response(
+                question=state["question"],
+                documents=state['documents']
+                
+            )
+            
+            logger.info("research response fetched from agent workflow")
+            
+            return {
+                "messages": [AIMessage(content=research_response)],
+                "research_result": research_response
+            }
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in research process: {e}")
+            raise
+        
+    
+    def _verifier_process(self, state: AgentState):
+        
+        try:
+            context = "\n\n".join(doc.page_content for doc in state['documents'])
+            verifier_response = self.verifier_agent.verifier_response(
+                answer=state['research_result'],
+                context=context
+            )
+            
+            if  "Supported: NO"  in verifier_response or "Relevant: NO":
+            
+                return{
+                    
+                    "verifier_result":verifier_response,
+                    "is_verified":False
+                }
+                
+            else:
+                
+                return{
+                    "verifier_result":verifier_response,
+                    "is_verified":True
+                }
+            
+            
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in verifier process: {e}")
+            raise
+           
         
         
         
