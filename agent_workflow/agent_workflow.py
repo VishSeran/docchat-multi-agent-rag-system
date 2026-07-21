@@ -35,7 +35,7 @@ class AgentWorkflow:
             workflow = StateGraph(AgentState)
             workflow.add_node("check_relavence",self._check_relevance)
             workflow.add_node("research",self._research_process)
-            workflow.add_node("verifier",)
+            workflow.add_node("verifier",self._verifier_process)
         
         
         except ValueError as e:
