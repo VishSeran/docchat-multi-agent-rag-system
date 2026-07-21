@@ -62,6 +62,7 @@ class AgentWorkflow:
             if relevance_response == "CAN_ANSWER" or relevance_response == "PARTIAL":
                 return{
                     "messages": [AIMessage(content=relevance_response)],
+                    "relevance_result":relevance_response,
                     "is_relevant": True
                 }
                 
@@ -94,7 +95,7 @@ class AgentWorkflow:
             
             return {
                 "messages": [AIMessage(content=research_response)],
-                "draft_answer": research_response
+                "research_result": research_response
             }
             
         except ValueError as e:
