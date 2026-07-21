@@ -29,7 +29,7 @@ class RelevanceEvaluatorAgent:
                 api_key=GROQ_API
             )
             
-            logger.info("LLM relavence evaluator is created")
+            logger.info("LLM relevance evaluator is created")
             
             relevance_prompt_template = ChatPromptTemplate.from_messages(
                 [
@@ -97,5 +97,5 @@ class RelevanceEvaluatorAgent:
             raise
         
         except Exception as e:
-            logger.error(f"Error in get evaluate relavence: {e}")
+            logger.error(f"Error in get evaluate relevance: {e}")
             raise
