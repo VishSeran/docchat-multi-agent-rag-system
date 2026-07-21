@@ -79,7 +79,7 @@ class RelevanceEvaluatorAgent:
         
         try:
             top_docs = retriever.invoke(question)
-            document_content = "\n\n".join(document.content for document in top_docs[:k])
+            document_content = "\n\n".join(document.page_content for document in top_docs[:k])
             
             response = self.relevance_chain.invoke({
                 "question": question,
