@@ -18,6 +18,6 @@ class AgentState(TypedDict):
     documents: list[Document]
     draft_answer: BaseMessage
     verification_report: BaseMessage
-    is_relavent: bool
+    is_relevant: bool
     retriever: EnsembleRetriever
     

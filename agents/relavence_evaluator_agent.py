@@ -5,10 +5,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 from configuration.config import RELAVENCE_EVALUATOR_MODEL,relevance_checker_prompt
 from configuration.logger import get_logger
+from langchain_classic.retrievers import EnsembleRetriever
 
 logger = get_logger("relavence-evaluator")
 
-class RelavenceEvaluatorAgent:
+class RelevanceEvaluatorAgent:
     
     def __init__(self, relavence_model=RELAVENCE_EVALUATOR_MODEL):
         
@@ -30,7 +31,7 @@ class RelavenceEvaluatorAgent:
             
             logger.info("LLM relavence evaluator is created")
             
-            relevence_prompt_template = ChatPromptTemplate.from_messages(
+            relevance_prompt_template = ChatPromptTemplate.from_messages(
                 [
                     (
                         "system",
@@ -53,7 +54,7 @@ class RelavenceEvaluatorAgent:
             
             logger.info("LLM relavence evaluator prompt is created")
             
-            self.relevance_chain = relevence_prompt_template | self.llm_grader
+            self.relevance_chain = relevance_prompt_template | self.llm_grader
             
             logger.info("LLM relavence evaluator chain is created")
             
@@ -66,7 +67,7 @@ class RelavenceEvaluatorAgent:
             raise
         
     
-    def evaluate_relevance(self, question, document_content):
+    def evaluate_relevance(self, question, retriever:EnsembleRetriever, k=5):
         
         """
         1. Retrieve the top-k document chunks from the global retriever.
@@ -77,6 +78,9 @@ class RelavenceEvaluatorAgent:
         """
         
         try:
+            top_docs = retriever.invoke(question)
+            document_content = "\n\n".join(document.content for document in top_docs[:k])
+            
             response = self.relevance_chain.invoke({
                 "question": question,
                 "document_content": document_content
