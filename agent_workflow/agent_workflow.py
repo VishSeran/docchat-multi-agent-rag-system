@@ -112,6 +112,26 @@ class AgentWorkflow:
     def _verifier_process(self, state: AgentState):
         
         try:
+            context = "\n\n".join(doc.page_content for doc in state['documents'])
+            verifier_response = self.verifier_agent.verifier_response(
+                answer=state['research_result'],
+                context=context
+            )
+            
+            if  "Supported: NO"  in verifier_response or "Relevant: NO":
+            
+                return{
+                    
+                    "verifier_result":verifier_response,
+                    "is_verified":False
+                }
+                
+            else:
+                
+                return{
+                    "verifier_result":verifier_response,
+                    "is_verified":True
+                }
             
             
             
