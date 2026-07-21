@@ -32,7 +32,7 @@ class AgentWorkflow:
         try:
         
             workflow = StateGraph(AgentState)
-            workflow.add_node("check_relavence",)
+            workflow.add_node("check_relavence",self._check_relavence)
             workflow.add_node("research",)
             workflow.add_node("verifier",)
         
