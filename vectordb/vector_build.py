@@ -10,7 +10,7 @@ logger = get_logger("vector-build")
 
 class VectorBuild:
      
-    def __init__(self, docs,embedding_model, collection_name:str = COLLECTION_NAME):
+    def __init__(self,embedding_model, collection_name:str = COLLECTION_NAME):
         
         
         try:

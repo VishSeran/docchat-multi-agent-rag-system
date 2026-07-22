@@ -1,4 +1,4 @@
-
+import hashlib
 from configuration.logger import get_logger
 from vectordb.file_handler import DocumentProcessor
 from vectordb.embedding import EmbeddingModel
@@ -12,7 +12,7 @@ def main():
         
         document_processor = DocumentProcessor()
         embedding_model = EmbeddingModel()
-        vector_db = VectorBuild()
+        vector_db = VectorBuild(embedding_model.get_model())
         
         
         
@@ -41,7 +41,21 @@ def main():
             
             logger.info("Processing new/changed documents...")
             
-            chunks = document_processor.document_process(docs)
+            current_hashes = _get_file_hash(docs)
+            
+            if state['retriever'] is None:
+            
+                chunks = document_processor.document_process(docs)
+                retriever = vector_db.get_retriever(
+                    chunks=chunks
+                )
+                
+            return {
+                "retriever": retriever
+            }
+            
+            
+            
             
         except ValueError as e:
                 logger.error(f"Value error: {e}")   
@@ -50,5 +64,18 @@ def main():
         except Exception as e:
             logger.error(f"Error in question handler: {e}")
             raise
+        
+    
+    def _get_file_hash(upload_docs:list)->frozenset:
+        
+        hashes = set()
+        
+        for file in upload_docs:
+            with open(file.name, "rb") as f:
+                hashes.add(hashlib.sha256(f.read()).hexdigest())
+                
+        return frozenset(hashes)
+                
+        
     
     
