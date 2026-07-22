@@ -24,7 +24,7 @@ class AgentState(TypedDict):
     is_verified: bool
     
     retry_count: int
-    max_retries: int
+    max_retries: int = 5
 
     final_answer: str
     
