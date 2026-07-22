@@ -4,7 +4,7 @@ from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
 from agent_state import AgentState
 from langgraph.graph import StateGraph, END
 from configuration.logger import get_logger
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage
 
 
 logger = get_logger("agent-workflow")
@@ -35,11 +35,12 @@ class AgentWorkflow:
         try:
         
             workflow = StateGraph(AgentState)
-            workflow.add_node("check_relavence",self._check_relevance)
+            workflow.add_node("check_relevance",self._check_relevance)
             workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",self._verifier_process)
             
-            workflow.set_entry_point("check_relavence")
+            workflow.set_entry_point("check_relevance")
+            workflow.add_edge("research", "verifier")
             workflow.add_conditional_edges("check_relevance", self._relevance_condition)
             workflow.add_conditional_edges("verifier",self._verifier_condition)
             
@@ -70,7 +71,7 @@ class AgentWorkflow:
             if relevance_response == "CAN_ANSWER" or relevance_response == "PARTIAL":
                 return{
                     "messages": [AIMessage(content=relevance_response)],
-                    "documents":[top_docs],
+                    "documents":top_docs,
                     "relevance_result":relevance_response,
                     "is_relevant": True
                 }
@@ -105,7 +106,8 @@ class AgentWorkflow:
             
             return {
                 "messages": [AIMessage(content=research_response)],
-                "research_result": research_response
+                "research_result": research_response,
+                "retry_count": state.get("retry_count",0)+1
             }
             
         except ValueError as e:
@@ -126,7 +128,7 @@ class AgentWorkflow:
                 context=context
             )
             
-            if  "Supported: NO"  in verifier_response or "Relevant: NO":
+            if  "Supported: NO"  in verifier_response or "Relevant: NO" in verifier_response:
             
                 return{
                     
@@ -161,10 +163,11 @@ class AgentWorkflow:
             logger.info(f"[DEBUG] _relevance_condition -> {decision}")
             
             if state['is_relevant']:
-                return "research"
+                state['final_answer'] = state['research_result']
+                return END
             
             else:
-                return END
+                return "research"
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -185,8 +188,11 @@ class AgentWorkflow:
             if state['is_verified']:
                 return END
             
-            else:
-                return "research"
+            if state['retry_count'] >= state['max_retries']:
+                logger.info("Maximum retries are exceeded")
+                return END
+            
+            return "research"
             
         except ValueError as e:
             logger.error(f"Value error: {e}")

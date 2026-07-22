@@ -1,5 +1,5 @@
 from typing import TypedDict,Annotated
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph.message import add_messages
 from langchain_core.documents import Document
 from configuration.logger import get_logger
@@ -22,6 +22,9 @@ class AgentState(TypedDict):
 
     verifier_result: str
     is_verified: bool
+    
+    retry_count: int
+    max_retries: int
 
     final_answer: str
     
