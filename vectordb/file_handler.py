@@ -13,6 +13,7 @@ logger = get_logger("file-handler")
 class DocumentProcessor:
     
     def __init__(self):
+
         self.headers = [("#", "Header1 "), ("##", "Header 2")]
         self.cache_dir = Path(CACHE_DIR)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
