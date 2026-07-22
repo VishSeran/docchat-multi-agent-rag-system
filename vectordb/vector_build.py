@@ -16,22 +16,35 @@ class VectorBuild:
         try:
             
             self.embedding_model = embedding_model
+            self.collection_name = collection_name
             
             logger.info("Embedding model initialized")
+        
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in vector build initialization: {e}")
+            raise
+        
+    def get_retriever(self, chunks):
+        
+        try:
             
-            self.vector_store = Chroma.from_documents(
-                documents=docs,
+            vector_store = Chroma.from_documents(
+                documents=chunks,
                 embedding=self.embedding_model,
-                collection_name=collection_name,
+                collection_name=self.collection_name,
                 persist_directory=CHROMA_DB_PATH
             )
             
             logger.info("Vector store initialized")
             
-            self.bm25_retriever = BM25Retriever.from_documents(docs)
+            bm25_retriever = BM25Retriever.from_documents(chunks)
             logger.info("BM25 retriever initialized")
             
-            self.vector_store_retriever = self.vector_store.as_retriever(
+            vector_store_retriever = vector_store.as_retriever(
                 search_type = "similarity_score_threshold",
                 search_kwargs = {
                     "score_threshold": 0.6,
@@ -41,20 +54,20 @@ class VectorBuild:
             
             logger.info("Vector retriever initialized")
             
-            self.hybrid_retriever = EnsembleRetriever(
-                retrievers=[self.bm25_retriever, self.vector_store_retriever],
+            hybrid_retriever = EnsembleRetriever(
+                retrievers=[bm25_retriever, vector_store_retriever],
                 weights=HYBRID_RETRIEVER_WEIGHTS
             )
             
             logger.info("Hybrid retriever initialized")
             
-        
+            return hybrid_retriever
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
             raise
-        
+            
         except Exception as e:
-            logger.error(f"Error in vector build initialization: {e}")
+            logger.error(f"Error in get retriever: {e}")
             raise
         
