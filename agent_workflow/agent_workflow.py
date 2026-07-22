@@ -37,7 +37,7 @@ class AgentWorkflow:
             workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",self._verifier_process)
             
-            workflow.add_conditional_edges("")
+            workflow.add_conditional_edges("check_relevance", self._relevance_condition)
         
         
         except ValueError as e:
