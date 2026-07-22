@@ -38,6 +38,7 @@ class AgentWorkflow:
             workflow.add_node("verifier",self._verifier_process)
             
             workflow.add_conditional_edges("check_relevance", self._relevance_condition)
+            workflow.add_conditional_edges("verifier",)
         
         
         except ValueError as e:
@@ -150,6 +151,9 @@ class AgentWorkflow:
         
         
         try:
+            decision = "relevant" if state["is_relevant"] else "irrelevant"
+            
+            logger.info(f"[DEBUG] _relevance_condition -> {decision}")
             
             if state['is_relevant']:
                 return "research"
@@ -164,6 +168,28 @@ class AgentWorkflow:
         except Exception as e:
             logger.error(f"Error in _relevance_condition: {e}")
             raise  
+        
+    
+    def _verifier_condition(self,state:AgentState):
+        
+        try:
+            
+            decision = "end" if state['is_verified'] else "re-research"
+            logger.info(f"[DEBUG] _relevance_condition -> {decision}")
+            
+            if state['is_verified']:
+                return END
+            
+            else:
+                return "research"
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in _verifier_condition: {e}")
+            raise
         
         
         
