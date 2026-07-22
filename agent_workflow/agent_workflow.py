@@ -2,7 +2,7 @@ from agents.relavence_evaluator_agent import RelevanceEvaluatorAgent
 from agents.research_agent import ResearchAgent
 from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
 from agent_state import AgentState
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 from configuration.logger import get_logger
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -36,6 +36,8 @@ class AgentWorkflow:
             workflow.add_node("check_relavence",self._check_relevance)
             workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",self._verifier_process)
+            
+            workflow.add_conditional_edges("")
         
         
         except ValueError as e:
@@ -142,7 +144,26 @@ class AgentWorkflow:
         except Exception as e:
             logger.error(f"Error in verifier process: {e}")
             raise
-           
+        
+        
+    def _relevance_condition(self, state:AgentState):
+        
+        
+        try:
+            
+            if state['is_relevant']:
+                return "research"
+            
+            else:
+                return END
+        
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in _relevance_condition: {e}")
+            raise  
         
         
         
