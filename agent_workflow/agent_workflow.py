@@ -19,6 +19,8 @@ class AgentWorkflow:
             self.research_agent = ResearchAgent()
             self.verifier_agent = VerifierEvaluatorAgent()
             logger.info("Agents are initialized")
+            
+            self.compiled_workflow = self.build_workflow()
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -37,8 +39,11 @@ class AgentWorkflow:
             workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",self._verifier_process)
             
+            workflow.set_entry_point("check_relavence")
             workflow.add_conditional_edges("check_relevance", self._relevance_condition)
-            workflow.add_conditional_edges("verifier",)
+            workflow.add_conditional_edges("verifier",self._verifier_condition)
+            
+            return workflow.compile()
         
         
         except ValueError as e:
