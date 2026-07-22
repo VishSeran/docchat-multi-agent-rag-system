@@ -79,7 +79,7 @@ class AgentWorkflow:
             else:
                 return {
                     "messages": [AIMessage(content=relevance_response)],
-                    "documents":[top_docs],
+                    "documents":top_docs,
                     "is_relevant": False
                 }
                 
@@ -140,10 +140,9 @@ class AgentWorkflow:
                 
                 return{
                     "verifier_result":verifier_response,
-                    "is_verified":True
+                    "is_verified":True,
+                    "final_answer": state['research_result']
                 }
-            
-            
             
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -158,16 +157,15 @@ class AgentWorkflow:
         
         
         try:
-            decision = "relevant" if state["is_relevant"] else "irrelevant"
+            decision = "research" if state["is_relevant"] else "end"
             
             logger.info(f"[DEBUG] _relevance_condition -> {decision}")
             
             if state['is_relevant']:
-                state['final_answer'] = state['research_result']
-                return END
+                return "research"
             
             else:
-                return "research"
+                return END
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
