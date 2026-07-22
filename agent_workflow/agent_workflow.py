@@ -181,7 +181,7 @@ class AgentWorkflow:
         try:
             
             decision = "end" if state['is_verified'] else "re-research"
-            logger.info(f"[DEBUG] _relevance_condition -> {decision}")
+            logger.info(f"[DEBUG] _verifier_condition -> {decision}")
             
             if state['is_verified']:
                 return END
