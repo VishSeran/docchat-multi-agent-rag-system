@@ -3,6 +3,7 @@ from configuration.logger import get_logger
 from vectordb.file_handler import DocumentProcessor
 from vectordb.embedding import EmbeddingModel
 from vectordb.vector_build import VectorBuild
+from agent_workflow.agent_workflow import AgentWorkflow
 
 logger = get_logger("main")
 
@@ -13,6 +14,7 @@ def main():
         document_processor = DocumentProcessor()
         embedding_model = EmbeddingModel()
         vector_db = VectorBuild(embedding_model.get_model())
+        workflow = AgentWorkflow()
         
         
         
@@ -43,16 +45,27 @@ def main():
             
             current_hashes = _get_file_hash(docs)
             
-            if state['retriever'] is None:
+            if state['retriever'] is None or current_hashes != state['hashes']:
             
                 chunks = document_processor.document_process(docs)
                 retriever = vector_db.get_retriever(
                     chunks=chunks
                 )
                 
-            return {
-                "retriever": retriever
-            }
+                state.update({
+                    "hashes": current_hashes,
+                    "retriever": retriever
+                })
+            
+            result = workflow.run(
+                question=question,
+                retriever=state['retriever']
+            )
+            
+            return result['final_answer'], result['verifier_result'], state
+            
+            
+            
             
             
             

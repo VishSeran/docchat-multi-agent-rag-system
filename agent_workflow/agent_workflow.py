@@ -52,7 +52,7 @@ class AgentWorkflow:
             logger.error(f"Error in build workflow: {e}")
             raise
 
-    def run(self, question, docs, retriever):
+    def run(self, question, retriever):
 
         initial_state = {
             "question": question,
