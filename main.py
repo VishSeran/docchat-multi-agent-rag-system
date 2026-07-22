@@ -1,4 +1,5 @@
 import hashlib
+import gradio as gr
 from configuration.logger import get_logger
 from vectordb.file_handler import DocumentProcessor
 from vectordb.embedding import EmbeddingModel
@@ -16,7 +17,36 @@ def main():
         vector_db = VectorBuild(embedding_model.get_model())
         workflow = AgentWorkflow()
         
-        
+        with gr.Blocks(title="DocChat - Multi Agent RAG System") as demo:
+            gr.Markdown("## DocChat: powered by Docling 🐥 and LangGraph")
+            gr.Markdown("# How it works ✨:")
+            gr.Markdown("📤 Upload your document(s), enter your query then press Submit 📝")
+            gr.Markdown("Or you can select one of the examples from the drop-down menu, select Load Example then press Submit 📝")
+            gr.Markdown("⚠️ Note: DocChat only accepts documents in these formats: '.pdf', '.docx', '.txt', '.md'")  
+            
+            session_state = gr.State({
+                "hashes": frozenset(),
+                "retriever": None
+            })
+            
+            with gr.Row():
+                
+                with gr.Column():
+                    files = gr.File(label="📄 Upload Documents", type='filepath')
+                    question = gr.Textbox(label="❓ Question", lines=3)
+                    submit_btn = gr.Button("Submit")
+                    
+                    
+                with gr.Column():
+                    
+                    answer = gr.Textbox(label="Answer", interactive=False)
+                    verfication_result = gr.TextArea(label="✅ Verification Report")
+                    
+                submit_btn.click(
+                    fn = question_handler,
+                    inputs = [question,files],
+                    outputs = [answer, verfication_result, session_state]
+                )
         
         
     except ValueError as e:
@@ -63,20 +93,14 @@ def main():
             )
             
             return result['final_answer'], result['verifier_result'], state
-            
-            
-            
-            
-            
-            
-            
+   
         except ValueError as e:
                 logger.error(f"Value error: {e}")   
                 raise
             
         except Exception as e:
             logger.error(f"Error in question handler: {e}")
-            raise
+            return f"Error: {str(e)}", "", state 
         
     
     def _get_file_hash(upload_docs:list)->frozenset:
