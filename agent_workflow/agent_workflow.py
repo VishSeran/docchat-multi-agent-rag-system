@@ -2,7 +2,7 @@ from agents.relavence_evaluator_agent import RelevanceEvaluatorAgent
 from agents.research_agent import ResearchAgent
 from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
 from agent_state import AgentState
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, END
 from configuration.logger import get_logger
 from langchain_core.messages import AIMessage, HumanMessage
 
@@ -19,6 +19,8 @@ class AgentWorkflow:
             self.research_agent = ResearchAgent()
             self.verifier_agent = VerifierEvaluatorAgent()
             logger.info("Agents are initialized")
+            
+            self.compiled_workflow = self.build_workflow()
         
         except ValueError as e:
             logger.error(f"Value error: {e}")
@@ -36,6 +38,12 @@ class AgentWorkflow:
             workflow.add_node("check_relavence",self._check_relevance)
             workflow.add_node("research",self._research_process)
             workflow.add_node("verifier",self._verifier_process)
+            
+            workflow.set_entry_point("check_relavence")
+            workflow.add_conditional_edges("check_relevance", self._relevance_condition)
+            workflow.add_conditional_edges("verifier",self._verifier_condition)
+            
+            return workflow.compile()
         
         
         except ValueError as e:
@@ -142,7 +150,51 @@ class AgentWorkflow:
         except Exception as e:
             logger.error(f"Error in verifier process: {e}")
             raise
-           
+        
+        
+    def _relevance_condition(self, state:AgentState):
+        
+        
+        try:
+            decision = "relevant" if state["is_relevant"] else "irrelevant"
+            
+            logger.info(f"[DEBUG] _relevance_condition -> {decision}")
+            
+            if state['is_relevant']:
+                return "research"
+            
+            else:
+                return END
+        
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in _relevance_condition: {e}")
+            raise  
+        
+    
+    def _verifier_condition(self,state:AgentState):
+        
+        try:
+            
+            decision = "end" if state['is_verified'] else "re-research"
+            logger.info(f"[DEBUG] _relevance_condition -> {decision}")
+            
+            if state['is_verified']:
+                return END
+            
+            else:
+                return "research"
+            
+        except ValueError as e:
+            logger.error(f"Value error: {e}")
+            raise
+        
+        except Exception as e:
+            logger.error(f"Error in _verifier_condition: {e}")
+            raise
         
         
         
