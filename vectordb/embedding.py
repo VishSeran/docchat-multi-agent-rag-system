@@ -15,7 +15,7 @@ class EmbeddingModel:
             if not embedding_model_id:
                 raise ValueError("embedding model cannot be empty") 
             
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            device = "cuda" if torch.cuda.is_available() else "cpu"
             logger.info(f"Device is initialted: {device}")
             
             self.embed_model = HuggingFaceEmbeddings(

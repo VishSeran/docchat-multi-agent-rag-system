@@ -1,7 +1,7 @@
 from agents.relavence_evaluator_agent import RelevanceEvaluatorAgent
 from agents.research_agent import ResearchAgent
 from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
-from agent_state import AgentState
+from agent_workflow.agent_state import AgentState
 from langgraph.graph import StateGraph, END
 from configuration.logger import get_logger
 from langchain_core.messages import AIMessage

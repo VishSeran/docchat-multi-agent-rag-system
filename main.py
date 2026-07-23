@@ -21,6 +21,7 @@ def main():
         def question_handler(question:str, docs:list, state:dict):
             
             try:
+            
                 
                 if not question:
                     raise ValueError("Question must not be empty")
@@ -68,12 +69,20 @@ def main():
             hashes = set()
             
             for file in upload_docs:
-                with open(file.name, "rb") as f:
+                with open(file, "rb") as f:
                     hashes.add(hashlib.sha256(f.read()).hexdigest())
                     
             return frozenset(hashes)
         
-        with gr.Blocks(title="DocChat - Multi Agent RAG System") as demo:
+        css = """
+                    #answer-box {
+                        min-height: 500px;
+                        max-height: 800px;
+                        overflow-y: auto;
+                    }
+                    """
+        
+        with gr.Blocks(title="DocChat - Multi Agent RAG System", css=css) as demo:
             gr.Markdown("## DocChat: powered by Docling 🐥 and LangGraph")
             gr.Markdown("# How it works ✨:")
             gr.Markdown("📤 Upload your document(s), enter your query then press Submit 📝")
@@ -85,25 +94,28 @@ def main():
                 "retriever": None
             })
             
+            
             with gr.Row():
                 
                 with gr.Column():
-                    files = gr.File(label="📄 Upload Documents", type='filepath')
+                    files = gr.File(label="📄 Upload Documents", type='filepath', file_count='multiple')
                     question = gr.Textbox(label="❓ Question", lines=3)
                     submit_btn = gr.Button("Submit")
                     
                     
                 with gr.Column():
                     
-                    answer = gr.Textbox(label="Answer", interactive=False)
+                    answer = gr.TextArea(label="Answer", lines=15, max_lines=30,elem_id="answer-box")
                     verfication_result = gr.TextArea(label="✅ Verification Report")
                     
                 submit_btn.click(
                     fn=question_handler,
-                    inputs=[question,files],
+                    inputs=[question,files, session_state],
                     outputs=[answer,verfication_result, session_state]
                     
                 )
+                
+        demo.launch()
         
     except ValueError as e:
         logger.error(f"Value error: {e}")   
@@ -112,4 +124,9 @@ def main():
     except Exception as e:
         logger.error(f"Error in main: {e}")
         raise 
+    
+
+
+if __name__ == "__main__":
+    main()
     
