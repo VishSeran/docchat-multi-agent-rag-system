@@ -2,6 +2,14 @@
 
 DocChat is a multi-agent retrieval-augmented generation (RAG) system that answers questions about long, complex documents (PDFs, Word files, text reports) with fact-checked, hallucination-resistant responses. Instead of relying on a single LLM call, DocChat orchestrates a team of specialized agents that retrieve, reason, verify, and self-correct before returning an answer.
 
+---
+![DocChat-Related Query](demo_related.PNG)
+
+
+---
+![DocChat-Unrelated Query](demo_not_related.PNG)
+
+
 ## Why DocChat?
 
 General-purpose chatbots often struggle with long documents that contain dense text, tables, and figures — misreading tables, missing footnoted data, or fabricating citations outright. DocChat addresses this with a structured, verification-driven pipeline instead of a single-shot LLM response.
