@@ -75,12 +75,12 @@ def main():
             return frozenset(hashes)
         
         css = """
-                    #answer-box {
-                        min-height: 500px;
-                        max-height: 800px;
-                        overflow-y: auto;
-                    }
-                    """
+                #answer-box {
+                    min-height: 500px !important;
+                    max-height: 800px !important;
+                    overflow-y: auto;
+                }
+                """
         
         with gr.Blocks(title="DocChat - Multi Agent RAG System", css=css) as demo:
             gr.Markdown("## DocChat: powered by Docling 🐥 and LangGraph")
@@ -103,10 +103,19 @@ def main():
                     submit_btn = gr.Button("Submit")
                     
                     
-                with gr.Column():
-                    
-                    answer = gr.TextArea(label="Answer", lines=15, max_lines=30,elem_id="answer-box")
-                    verfication_result = gr.TextArea(label="✅ Verification Report")
+                with gr.Column(scale=2):
+
+                    answer = gr.Markdown(
+                        elem_id="answer-box"
+                    )
+
+                with gr.Column(scale=1):
+
+                    verfication_result = gr.TextArea(
+                        label="✅ Verification Report",
+                        lines=15,
+                        max_lines=30
+                    )
                     
                 submit_btn.click(
                     fn=question_handler,

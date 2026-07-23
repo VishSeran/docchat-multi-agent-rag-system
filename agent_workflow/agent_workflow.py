@@ -87,7 +87,8 @@ class AgentWorkflow:
                 return {
                     "messages": [AIMessage(content=relevance_response)],
                     "documents": top_docs,
-                    "is_relevant": False,
+                    "final_answer":"Your question is not relevance with the documents that you provided!!!",
+                    "is_relevant": False
                 }
 
         except ValueError as e:
