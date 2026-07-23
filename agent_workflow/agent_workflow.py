@@ -1,7 +1,7 @@
 from agents.relavence_evaluator_agent import RelevanceEvaluatorAgent
 from agents.research_agent import ResearchAgent
 from agents.verifier_evaluator_agent import VerifierEvaluatorAgent
-from agent_state import AgentState
+from agent_workflow.agent_state import AgentState
 from langgraph.graph import StateGraph, END
 from configuration.logger import get_logger
 from langchain_core.messages import AIMessage
@@ -87,7 +87,9 @@ class AgentWorkflow:
                 return {
                     "messages": [AIMessage(content=relevance_response)],
                     "documents": top_docs,
-                    "is_relevant": False,
+                    "verifier_result": "None", 
+                    "final_answer":"Your question is not relevance with the documents that you provided!!!",
+                    "is_relevant": False
                 }
 
         except ValueError as e:
@@ -124,19 +126,23 @@ class AgentWorkflow:
     def _verifier_process(self, state: AgentState):
 
         try:
-            context = "\n\n".join(doc.page_content for doc in state["documents"])
+            context_docs = "\n\n".join(doc.page_content for doc in state["documents"])
             verifier_response = self.verifier_agent.verifier_response(
-                answer=state["research_result"], context=context
+                answer=state["research_result"], context=context_docs
             )
 
             if (
                 "Supported: NO" in verifier_response
                 or "Relevant: NO" in verifier_response
             ):
-                return {"verifier_result": verifier_response, "is_verified": False}
+                return {"messages": [AIMessage(content=verifier_response)],
+                        "verifier_result": verifier_response, 
+                        "is_verified": False
+                        }
 
             else:
                 return {
+                    "messages": [AIMessage(content=verifier_response)],
                     "verifier_result": verifier_response,
                     "is_verified": True,
                     "final_answer": state["research_result"],
